@@ -1,10 +1,10 @@
 package RetirementAccountPackage;
 
 import javax.swing.*;
-import java.awt.*;
 
 public class FourZeroOneK extends JFrame {
     //instance variables
+
     private JTextField annualSalary;
     private JTextField contributionPercentPerMonth;
     private JTextField estimatedSalaryPercentIncrease;
@@ -16,18 +16,19 @@ public class FourZeroOneK extends JFrame {
     private JTextField salaryLimitPercent;
     private JTextField marginalTaxRate;
 
+
     public FourZeroOneK() {
 
-        setTitle("401K Calculator");
-        setSize(1920,1080);
-        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        setLocationRelativeTo(null);
-        //setLayout(new GridLayout(7,4));
-        ImageIcon logo = new ImageIcon("C:\\Users\\jubay\\OneDrive\\Documents\\401kLogo");
-        setIconImage(logo.getImage());
-        setVisible(true);
 
-        JLabel personalInfoLabel = new JLabel("Personal Information");
+
+
+
+        //JLabel personalInfoLabel = new JLabel("Personal Information");
+        //add(personalInfoLabel);
+
+
+        /*
+
 
         JLabel ageLabel = new JLabel("Current Age:");
         currentAge = new JTextField();
@@ -85,10 +86,31 @@ public class FourZeroOneK extends JFrame {
         add(expectedRateOfReturn);
         add(marginalTaxRate);
 
+     */
+
+        setVisible(true);
 
 
 
 
+
+
+    }
+
+    private void calculate401k(){
+
+        //calculate PMT
+        double salary = Double.parseDouble(annualSalary.getText());
+        double contribution = (Double.parseDouble(contributionPercentPerMonth.getText()))/100;
+        double limit = (Double.parseDouble(salaryLimitPercent.getText()))/100;
+        double match = (Double.parseDouble(employerMatchPercent.getText()))/100;
+        double PMT = (salary * contribution)+((salary*limit)*match);
+
+        int time = (Integer.parseInt(plannedRetirementAge.getText())) - (Integer.parseInt(currentAge.getText()));
+        double currentBalance = Double.parseDouble(current401kBalance.getText());
+        double rate = (Double.parseDouble(expectedRateOfReturn.getText()))/100;
+        //calculate result
+        double result = (currentBalance*(Math.pow((1 + rate),time))) + (PMT * (((Math.pow((1+rate),time))- 1)/rate));
 
     }
 
