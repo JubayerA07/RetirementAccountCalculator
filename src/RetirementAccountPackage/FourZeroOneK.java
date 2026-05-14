@@ -19,9 +19,13 @@ public class FourZeroOneK extends JFrame {
     public FourZeroOneK() {
 
         setTitle("401K Calculator");
-        setSize(500,500);
+        setSize(1920,1080);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        setLayout(new GridLayout(10,3));
+        setLocationRelativeTo(null);
+        //setLayout(new GridLayout(7,4));
+        ImageIcon logo = new ImageIcon("C:\\Users\\jubay\\OneDrive\\Documents\\401kLogo");
+        setIconImage(logo.getImage());
+        setVisible(true);
 
         JLabel personalInfoLabel = new JLabel("Personal Information");
 
@@ -60,7 +64,30 @@ public class FourZeroOneK extends JFrame {
 
         add(personalInfoLabel);
         add(ageLabel);
+        add(annualSalaryLabel);
+        add(current401kBalanceLabel);
+        add(contributionLabel);
+        add(employerMatchLabel);
+        add(salaryLimitLabel);
         add(currentAge);
+        add(annualSalary);
+        add(current401kBalance);
+        add(contributionPercentPerMonth);
+        add(employerMatchPercent);
+        add(salaryLimitPercent);
+        add(projectionsLabel);
+        add(plannedRetirementAgeLabel);
+        add(estimatedSalaryPercentIncreaseLabel);
+        add(expectedRateOfReturnLabel);
+        add(marginalTaxRateLabel);
+        add(plannedRetirementAge);
+        add(estimatedSalaryPercentIncrease);
+        add(expectedRateOfReturn);
+        add(marginalTaxRate);
+
+
+
+
 
 
     }
