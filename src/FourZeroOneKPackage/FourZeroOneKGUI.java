@@ -41,7 +41,7 @@ public class FourZeroOneKGUI extends JFrame {
         setSize(1000,1000);
         setResizable(false);
         setLayout(null);
-        setDefaultCloseOperation(EXIT_ON_CLOSE);
+        setDefaultCloseOperation(DISPOSE_ON_CLOSE);
         setLocationRelativeTo(null);
 
 
