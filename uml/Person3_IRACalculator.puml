@@ -1,0 +1,54 @@
+@startuml Person3_IRACalculator
+title IRA Calculator (Person 3)
+
+abstract class IRAAccount {
+  - startingBalance: double
+  - currentAge: int
+  - retirementAge: int
+  - annualContribution: double
+  - rateOfReturn: double
+  - marginalTaxRate: double
+  + {static} CONTRIB_LIMIT_UNDER_50: double
+  + {static} CONTRIB_LIMIT_50_PLUS: double
+  + {static} limitForAge(age: int): double
+  + project(): ProjectionResult
+  + {abstract} getPlanName(): String
+  + {abstract} applyTaxTreatment(preTax: double): double
+}
+
+class RothIRA {
+  + getPlanName(): String
+  + applyTaxTreatment(preTax: double): double
+}
+
+class TraditionalIRA {
+  + getPlanName(): String
+  + applyTaxTreatment(preTax: double): double
+}
+
+class IRAAccount.ProjectionResult {
+  + ages: int[]
+  + balances: double[]
+  + contributions: double[]
+  + endingBalance(): double
+  + totalContributions(): double
+}
+
+class IRACalculatorPage <<JFrame>> {
+  - input fields (JTextField x6, JCheckBox)
+  - rothChartPanel: ChartPanel
+  - tradChartPanel: ChartPanel
+  + IRACalculatorPage()
+  - onCalculate()
+  - onSaveImage()
+  - buildChart(...): JFreeChart
+}
+
+IRAAccount <|-- RothIRA
+IRAAccount <|-- TraditionalIRA
+IRAAccount +.. IRAAccount.ProjectionResult
+IRACalculatorPage ..> RothIRA : creates
+IRACalculatorPage ..> TraditionalIRA : creates
+IRACalculatorPage ..> IRAAccount.ProjectionResult : reads
+
+@enduml
