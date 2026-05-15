@@ -1,10 +1,15 @@
 /*
  * Retirement Account Calculator
  * CSCI 185
- * Contributors: Person 3
  * Date: 2026-05-15
  */
 package IRAPackage;
+
+import org.jfree.chart.ChartFactory;
+import org.jfree.chart.ChartPanel;
+import org.jfree.chart.JFreeChart;
+import org.jfree.chart.plot.PlotOrientation;
+import org.jfree.data.category.DefaultCategoryDataset;
 
 import javax.imageio.ImageIO;
 import javax.swing.*;
@@ -13,13 +18,10 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 
-// This is the main GUI page for the IRA calculator.
-// I extended JFrame so it's its own window. My teammates can just call
-// "new IRACalculatorPage()" from their home page button and this opens up.
+// IRA calculator window
 public class IRACalculatorPage extends JFrame {
 
-    // Text fields for all the user inputs. Default values are filled in so
-    // the user can hit Calculate right away and see something work.
+    // input fields with defaults
     private final JTextField startingBalanceField = new JTextField("1000", 8);
     private final JTextField currentAgeField      = new JTextField("25", 8);
     private final JTextField retirementAgeField   = new JTextField("65", 8);
@@ -27,26 +29,20 @@ public class IRACalculatorPage extends JFrame {
     private final JTextField rateOfReturnField    = new JTextField("7", 8);
     private final JTextField marginalTaxField     = new JTextField("22", 8);
 
-    // Checkbox: if ticked, we ignore the annual contribution field and just
-    // use the IRS max for the user's age.
     private final JCheckBox  maxContributionBox   = new JCheckBox("Maximize contribution");
 
-    // Labels above each chart that show end balance + total contributions.
+    // result labels
     private final JLabel rothSummaryLabel = new JLabel(" ");
     private final JLabel tradSummaryLabel = new JLabel(" ");
 
-    // The two chart panels (one for each IRA type).
-    private final ChartPanel rothChart = new ChartPanel("Roth IRA");
-    private final ChartPanel tradChart = new ChartPanel("Traditional IRA");
+    // the two charts
+    private final ChartPanel rothChartPanel = new ChartPanel(emptyChart("Roth IRA"));
+    private final ChartPanel tradChartPanel = new ChartPanel(emptyChart("Traditional IRA"));
 
-    // Constructor builds the whole window and shows it.
     public IRACalculatorPage() {
         super("IRA Calculator");
-
-        // Just close this window, don't kill the whole app.
         setDefaultCloseOperation(DISPOSE_ON_CLOSE);
 
-        // Inputs on the left, charts on the right.
         JPanel mainPanel = new JPanel(new BorderLayout(8, 8));
         mainPanel.add(buildInputPanel(), BorderLayout.WEST);
         mainPanel.add(buildChartsPanel(), BorderLayout.CENTER);
@@ -54,12 +50,11 @@ public class IRACalculatorPage extends JFrame {
 
         setMinimumSize(new Dimension(900, 600));
         pack();
-        setLocationRelativeTo(null); // center on screen
+        setLocationRelativeTo(null);
         setVisible(true);
     }
 
-    // Builds the left side: labels + text fields + the two buttons.
-    // GridLayout makes everything line up in two columns automatically.
+    // left side
     private JPanel buildInputPanel() {
         JPanel panel = new JPanel(new GridLayout(0, 2, 4, 4));
         panel.setBorder(BorderFactory.createTitledBorder("Inputs"));
@@ -72,7 +67,6 @@ public class IRACalculatorPage extends JFrame {
         panel.add(new JLabel("Marginal tax rate (%):"));       panel.add(marginalTaxField);
         panel.add(new JLabel(""));                             panel.add(maxContributionBox);
 
-        // Hook up the buttons to their methods using lambdas.
         JButton calculateBtn = new JButton("Calculate");
         JButton saveBtn      = new JButton("Save Image");
         calculateBtn.addActionListener(e -> onCalculate());
@@ -83,29 +77,26 @@ public class IRACalculatorPage extends JFrame {
         return panel;
     }
 
-    // Builds the right side: two stacked panels, one per chart.
+    // right side
     private JPanel buildChartsPanel() {
         JPanel panel = new JPanel(new GridLayout(2, 1, 8, 8));
 
         JPanel roth = new JPanel(new BorderLayout());
         roth.add(rothSummaryLabel, BorderLayout.NORTH);
-        roth.add(rothChart, BorderLayout.CENTER);
+        roth.add(rothChartPanel, BorderLayout.CENTER);
 
         JPanel trad = new JPanel(new BorderLayout());
         trad.add(tradSummaryLabel, BorderLayout.NORTH);
-        trad.add(tradChart, BorderLayout.CENTER);
+        trad.add(tradChartPanel, BorderLayout.CENTER);
 
         panel.add(roth);
         panel.add(trad);
         return panel;
     }
 
-    // Runs when the user clicks Calculate.
-    // First reads + validates everything, then builds both IRA objects,
-    // projects them, and pushes the results into the chart panels.
+    // calculate button
     private void onCalculate() {
         try {
-            // Read each field. The parse helpers throw if anything's bad.
             double startingBalance = parseNonNegativeDouble(startingBalanceField.getText(), "Starting balance");
             int currentAge = parseAge(currentAgeField.getText(), "Current age");
             int retirementAge = parseAge(retirementAgeField.getText(), "Retirement age");
@@ -115,9 +106,7 @@ public class IRACalculatorPage extends JFrame {
             double rateOfReturn = parsePercent(rateOfReturnField.getText(), "Expected rate of return");
             double marginalTax  = parsePercent(marginalTaxField.getText(), "Marginal tax rate");
 
-            // Figure out the contribution amount. If "maximize" is checked,
-            // just use the IRS limit for this user's age. Otherwise read the
-            // field and make sure it isn't over the limit.
+            // max contribution override
             double limit = IRAAccount.limitForAge(currentAge);
             double annualContrib;
             if (maxContributionBox.isSelected()) {
@@ -131,8 +120,7 @@ public class IRACalculatorPage extends JFrame {
                 }
             }
 
-            // Polymorphism in action -- same inputs, two different subclasses,
-            // each returns a different projection because of applyTaxTreatment.
+            // run both IRAs
             RothIRA roth = new RothIRA(startingBalance, currentAge, retirementAge,
                                        annualContrib, rateOfReturn, marginalTax);
             TraditionalIRA trad = new TraditionalIRA(startingBalance, currentAge, retirementAge,
@@ -141,33 +129,45 @@ public class IRACalculatorPage extends JFrame {
             IRAAccount.ProjectionResult rothResult = roth.project();
             IRAAccount.ProjectionResult tradResult = trad.project();
 
-            // Push the data into the chart panels (they repaint themselves).
-            rothChart.setData(rothResult);
-            tradChart.setData(tradResult);
+            rothChartPanel.setChart(buildChart(roth.getPlanName(), rothResult));
+            tradChartPanel.setChart(buildChart(trad.getPlanName(), tradResult));
 
-            // Update the summary labels above each chart.
             rothSummaryLabel.setText(summary(roth.getPlanName(), rothResult));
             tradSummaryLabel.setText(summary(trad.getPlanName(), tradResult));
 
         } catch (IllegalArgumentException ex) {
-            // If anything was wrong, show the user a popup with the reason.
+            // show error popup
             JOptionPane.showMessageDialog(this, ex.getMessage(),
                                           "Invalid input", JOptionPane.ERROR_MESSAGE);
         }
     }
 
-    // --- Input parsing helpers ---
-    // These throw IllegalArgumentException with a friendly message if the
-    // user typed something we can't use. onCalculate() catches those and
-    // shows the message in a JOptionPane.
+    // blank chart
+    private static JFreeChart emptyChart(String title) {
+        return ChartFactory.createLineChart(title, "Age", "Balance ($)",
+                new DefaultCategoryDataset(), PlotOrientation.VERTICAL,
+                true, true, false);
+    }
 
+    // chart with data
+    private JFreeChart buildChart(String planName, IRAAccount.ProjectionResult r) {
+        DefaultCategoryDataset dataset = new DefaultCategoryDataset();
+        for (int i = 0; i < r.ages.length; i++) {
+            String age = String.valueOf(r.ages[i]);
+            dataset.addValue(r.balances[i], "Retirement savings", age);
+            dataset.addValue(r.contributions[i], "Total contributions", age);
+        }
+        return ChartFactory.createLineChart(planName, "Age", "Balance ($)",
+                dataset, PlotOrientation.VERTICAL, true, true, false);
+    }
+
+    // input checks
     private static double parseNonNegativeDouble(String text, String fieldName) {
         try {
             double v = Double.parseDouble(text.trim());
             if (v < 0) throw new IllegalArgumentException(fieldName + " cannot be negative.");
             return v;
         } catch (NumberFormatException e) {
-            // Re-throw as IllegalArgumentException so onCalculate has one type to catch.
             throw new IllegalArgumentException(fieldName + " must be a number.");
         }
     }
@@ -182,55 +182,38 @@ public class IRACalculatorPage extends JFrame {
         }
     }
 
-    // Reads a percent and converts to decimal (so 7 becomes 0.07).
+    // turns % into decimal
     private static double parsePercent(String text, String fieldName) {
         double v = parseNonNegativeDouble(text, fieldName);
         if (v > 100) throw new IllegalArgumentException(fieldName + " cannot exceed 100%.");
         return v / 100.0;
     }
 
-    // Builds the one-line summary that goes above each chart.
     private String summary(String planName, IRAAccount.ProjectionResult r) {
         return String.format("%s   End balance: $%,.2f   Total contributions: $%,.2f",
                              planName, r.endingBalance(), r.totalContributions());
     }
 
-    // --- File I/O part ---
-    // Save button: takes the current charts + input values and writes a PNG.
+    // save button - writes PNG
     private void onSaveImage() {
-        // Make sure they hit Calculate first -- otherwise there's no data.
-        if (rothChart.getData() == null || tradChart.getData() == null) {
-            JOptionPane.showMessageDialog(this, "Calculate first, then save.",
-                                          "Nothing to save", JOptionPane.WARNING_MESSAGE);
-            return;
-        }
+        File out = new File("ira_chart.png");
 
-        // Pop up a file chooser so the user picks where to save.
-        JFileChooser chooser = new JFileChooser();
-        chooser.setSelectedFile(new File("ira_projection.png"));
-        if (chooser.showSaveDialog(this) != JFileChooser.APPROVE_OPTION) return;
-        File out = chooser.getSelectedFile();
-        // Add .png if they didn't type it.
-        if (!out.getName().toLowerCase().endsWith(".png")) {
-            out = new File(out.getParentFile(), out.getName() + ".png");
-        }
-
-        // Make a blank image and draw into it (inputs at top, charts below).
         int width = 700;
-        int height = 900;
+        int chartH = 300;
+        int textH = 200;
+        int height = textH + chartH * 2;
+
         BufferedImage img = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
         Graphics2D g = img.createGraphics();
         try {
-            // White background.
             g.setColor(Color.WHITE);
             g.fillRect(0, 0, width, height);
 
-            // Title at the top.
             g.setColor(Color.BLACK);
             g.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 16));
             g.drawString("IRA Projection Report", 10, 24);
 
-            // List all the input values and the two summary lines.
+            // input values listed at top
             g.setFont(new Font(Font.SANS_SERIF, Font.PLAIN, 12));
             int y = 48;
             for (String line : inputLines()) {
@@ -238,16 +221,13 @@ public class IRACalculatorPage extends JFrame {
                 y += 16;
             }
 
-            // Reuse the same chart drawing code from ChartPanel.
-            rothChart.paintToGraphics(g, 0, 220, width, 320);
-            tradChart.paintToGraphics(g, 0, 560, width, 320);
+            // draw both charts under the text
+            rothChartPanel.getChart().draw(g, new Rectangle(0, textH, width, chartH));
+            tradChartPanel.getChart().draw(g, new Rectangle(0, textH + chartH, width, chartH));
         } finally {
-            // Always release the Graphics object even if something blew up.
             g.dispose();
         }
 
-        // Actually write the image to disk. ImageIO.write can throw IOException
-        // (e.g. read-only folder), so handle it.
         try {
             ImageIO.write(img, "png", out);
             JOptionPane.showMessageDialog(this, "Saved to:\n" + out.getAbsolutePath(),
@@ -258,8 +238,7 @@ public class IRACalculatorPage extends JFrame {
         }
     }
 
-    // The lines of text that go at the top of the saved image (so the
-    // image is self-explanatory and doesn't lose context).
+    // text shown at top of saved image
     private String[] inputLines() {
         return new String[] {
             "Starting balance: $"     + startingBalanceField.getText(),
@@ -275,9 +254,7 @@ public class IRACalculatorPage extends JFrame {
         };
     }
 
-    // Lets me run just this page on its own for testing.
-    // My teammates won't use this -- they'll just call "new IRACalculatorPage()"
-    // from their main app.
+    // for testing on its own
     public static void main(String[] args) {
         SwingUtilities.invokeLater(IRACalculatorPage::new);
     }

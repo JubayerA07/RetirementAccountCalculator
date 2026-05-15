@@ -1,15 +1,11 @@
 /*
  * Retirement Account Calculator
  * CSCI 185
- * Contributors: Person 3
  * Date: 2026-05-15
  */
 package IRAPackage;
 
-// Traditional IRA -- opposite of Roth. Contributions are pre-tax (no tax now)
-// but when you take the money out in retirement, you owe income tax on it.
-// So our "balance" is shown after taxes are taken out, to make it a fair
-// comparison with the Roth balance side by side.
+// Traditional = taxed on withdrawal
 public class TraditionalIRA extends IRAAccount {
 
     public TraditionalIRA(double startingBalance,
@@ -27,8 +23,7 @@ public class TraditionalIRA extends IRAAccount {
         return "Traditional IRA";
     }
 
-    // Subtract the marginal tax rate from the balance.
-    // Example: $100,000 with 22% tax = $78,000 after taxes.
+    // subtract tax from the balance
     @Override
     public double applyTaxTreatment(double preTaxBalance) {
         return preTaxBalance * (1.0 - getMarginalTaxRate());

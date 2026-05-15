@@ -1,12 +1,15 @@
 /*
  * Retirement Account Calculator
  * CSCI 185
- * Contributors: Person 1- Nikolas Tsagaris
- * Date: 2026-05-14
+ * Contributors: Person 1- Nikolas Tsagaris, Person 3
+ * Date: 2026-05-15
  */
 
 
 package RetirementAccountPackage;
+
+import FourZeroOneKPackage.FourZeroOneKGUI;
+import IRAPackage.IRACalculatorPage;
 
 import javax.swing.BorderFactory;
 import javax.swing.Box;
@@ -41,11 +44,25 @@ public class HomePage extends JPanel {
         infoButton.setAlignmentX(CENTER_ALIGNMENT);
         infoButton.addActionListener(e -> onOpenInfo.run());
 
+        // Buttons to open the two calculator windows. Each calculator is its
+        // own JFrame so we just construct it and it pops up.
+        JButton iraButton = new JButton("Open IRA calculator");
+        iraButton.setAlignmentX(CENTER_ALIGNMENT);
+        iraButton.addActionListener(e -> new IRACalculatorPage());
+
+        JButton fourZeroOneKButton = new JButton("Open 401(k) calculator");
+        fourZeroOneKButton.setAlignmentX(CENTER_ALIGNMENT);
+        fourZeroOneKButton.addActionListener(e -> new FourZeroOneKGUI());
+
         center.add(title);
         center.add(Box.createRigidArea(new Dimension(0, 12)));
         center.add(subtitle);
         center.add(Box.createRigidArea(new Dimension(0, 24)));
         center.add(infoButton);
+        center.add(Box.createRigidArea(new Dimension(0, 8)));
+        center.add(iraButton);
+        center.add(Box.createRigidArea(new Dimension(0, 8)));
+        center.add(fourZeroOneKButton);
 
         add(center, BorderLayout.CENTER);
     }
