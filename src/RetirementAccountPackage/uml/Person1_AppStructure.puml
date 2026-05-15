@@ -1,0 +1,52 @@
+@startuml Person1_AppStructure
+skinparam classAttributeIconSize 0
+hide empty members
+
+class MainApp {
+  +main(args : String[]) : void
+}
+
+class Main {
+  +main(args : String[]) : void
+}
+
+class HomePage {
+  +HomePage(onOpenInfo : Runnable)
+}
+
+class InfoPage {
+  +InfoPage(onBackToHome : Runnable)
+}
+
+abstract class RetirementPlan {
+  #RetirementPlan(displayName : String)
+  +getDisplayName() : String
+  {abstract} +getTagline() : String
+  {abstract} +getContributionTaxSummary() : String
+  {abstract} +getWithdrawalTaxSummary() : String
+  {abstract} +getRmdSummary() : String
+  {abstract} +getBestForSummary() : String
+}
+
+class TraditionalPlan {
+  +TraditionalPlan()
+}
+
+class RothPlan {
+  +RothPlan()
+}
+
+Main --> MainApp : launches
+MainApp *-- HomePage : cards
+MainApp *-- InfoPage : cards
+InfoPage ..> TraditionalPlan : uses
+InfoPage ..> RothPlan : uses
+TraditionalPlan --|> RetirementPlan
+RothPlan --|> RetirementPlan
+
+note right of MainApp
+  JFrame + CardLayout navigation
+  between Home and Info views
+end note
+
+@enduml
