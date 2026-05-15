@@ -1,3 +1,10 @@
+/*
+ * Retirement Account Calculator
+ * CSCI 185
+ * Contributors: Person 1- Nikolas Tsagaris
+ * Date: 2026-05-14
+ */
+
 package RetirementAccountPackage;
 
 import javax.swing.BorderFactory;
