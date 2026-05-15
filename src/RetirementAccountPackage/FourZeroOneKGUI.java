@@ -1,9 +1,13 @@
 package RetirementAccountPackage;
 
+import javax.imageio.ImageIO;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.image.BufferedImage;
+import java.io.File;
+
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartPanel;
 import org.jfree.chart.JFreeChart;
@@ -26,6 +30,10 @@ public class FourZeroOneKGUI extends JFrame {
     private  JButton resetButton;
     private DefaultCategoryDataset dataset;
     private ChartPanel chartPanel;
+    private DefaultCategoryDataset rothDataset;
+    private ChartPanel rothChartPanel;
+
+
 
     public FourZeroOneKGUI() {
 
@@ -316,18 +324,35 @@ public class FourZeroOneKGUI extends JFrame {
         rothEmployContsLabel.setBounds(688, 287, 187, 40);
         add(rothEmployContsLabel);
 
-        //401l graph label
-        JLabel tradGraphLabel = new JLabel("401k");
-        tradGraphLabel.setFont(new Font("Dialog", Font.BOLD,10));
-        tradGraphLabel.setOpaque(true);
-        tradGraphLabel.setHorizontalAlignment(SwingConstants.CENTER);
-        tradGraphLabel.setBackground(new Color(50,96,168));
-        tradGraphLabel.setForeground(Color.WHITE);
-        tradGraphLabel.setBounds(880, 470, 100, 40);
-        add(tradGraphLabel);
 
 
 
+        //Screenshot Button
+        JButton screenshot = new JButton("Screenshot");
+        screenshot.setBackground(new Color(50, 96,168));
+        screenshot.setForeground(Color.WHITE);
+        screenshot.setOpaque(true);
+        screenshot.setBounds(20, 20, 130, 40);
+        add(screenshot);
+        screenshot.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                try {
+                    Robot robot = new Robot();
+                    Rectangle screenRect = FourZeroOneKGUI.this.getBounds();
+                    BufferedImage screenshot = robot.createScreenCapture(screenRect);
+
+                    File file = new File("C:\\Users\\jubay\\IdeaProjects\\RetirementAccountCalculator\\src\\RetirementAccountPackage\\retirement_calculator_screenshot.png");
+                    ImageIO.write(screenshot, "png", file);
+
+                    JOptionPane.showMessageDialog(FourZeroOneKGUI.this, "Screenshot saved!");
+
+                } catch (Exception ex) {
+                    JOptionPane.showMessageDialog(FourZeroOneKGUI.this, "Screenshot failed.");
+                    ex.printStackTrace();
+                }
+            }
+        });
 
 
 
@@ -347,8 +372,29 @@ public class FourZeroOneKGUI extends JFrame {
             @Override
             public void actionPerformed(ActionEvent e) {
 
+                String[] parameterArray = {annualSalary.getText(), contributionPercentPerMonth.getText(),
+                        estimatedSalaryPercentIncrease.getText(), currentAge.getText(), plannedRetirementAge.getText(),
+                        expectedRateOfReturn.getText(), current401kBalance.getText(), employerMatchPercent.getText(),
+                        salaryLimitPercent.getText(), marginalTaxRate.getText()};
+
+                try {
+                    validateParameterExists(parameterArray);
+                } catch (InvalidParameterException ex) {
+                    ex.printStackTrace();
+                    return;
+                }
+
+                try {
+                    validateParameter(parameterArray);
+                } catch (InvalidParameterException ex) {
+                    ex.printStackTrace();
+                    return;
+                }
+
+
+
                 resultsArea.setText("$" + calculate401k(Integer.parseInt(plannedRetirementAge.getText())));
-                rothResultsArea.setText(calculateRoth401k());
+                rothResultsArea.setText("$" + calculateRoth401k(Integer.parseInt(plannedRetirementAge.getText())));
 
                 int integerEmployeeCont = (int) trad401kEmployeeCont(Integer.parseInt(plannedRetirementAge.getText()));
 
@@ -403,6 +449,7 @@ public class FourZeroOneKGUI extends JFrame {
                 resultsArea.setText("");
                 rothResultsArea.setText("");
                 dataset.clear();
+                rothDataset.clear();
 
 
 
@@ -425,10 +472,29 @@ public class FourZeroOneKGUI extends JFrame {
         );
 
         chartPanel = new ChartPanel(lineChart);
-        chartPanel.setBounds(500, 350, 375, 300);
+        chartPanel.setBounds(500, 350, 375, 270);
         add(chartPanel);
 
         //create new roth 401k graph
+
+        rothDataset = new DefaultCategoryDataset();
+
+        JFreeChart rothLineChart = ChartFactory.createLineChart(
+                "Roth 401k Growth Over Time",
+                "Age",
+                "Balance ($)",
+                rothDataset,
+                PlotOrientation.VERTICAL,
+                true,
+                true,
+                false
+        );
+
+        rothChartPanel = new ChartPanel(rothLineChart);
+        rothChartPanel.setBounds(500, 630, 375, 260);
+        add(rothChartPanel);
+
+
 
 
 
@@ -437,12 +503,13 @@ public class FourZeroOneKGUI extends JFrame {
 
     private void updateChart(){
         dataset.clear();
+        rothDataset.clear();
 
         int ageNow = Integer.parseInt(currentAge.getText());
         int retiredAge = Integer.parseInt(plannedRetirementAge.getText());
         int sub = (retiredAge - ageNow)/ 5;
 
-        for(int i = ageNow; i <= retiredAge; i+= sub){
+        for(int i = ageNow; i <= retiredAge; i++){
 
             double balanceWithEmployer = calculate401k(i);
             double balanceWithOutEmployer = calculate401kWithoutMatch(i);
@@ -454,8 +521,26 @@ public class FourZeroOneKGUI extends JFrame {
 
         }
 
+        for(int i = ageNow; i <= retiredAge; i++){
+
+            double rothBalanceWithEmployer = calculateRoth401k(i);
+            double rothBalanceWithOutEmployer = calculateRoth401kWihOutEmployer(i);
+            double totalEmployeeCont = trad401kEmployeeCont(i);
+
+
+
+            rothDataset.addValue(rothBalanceWithEmployer,"401k w Employer Match", i + "");
+            rothDataset.addValue(rothBalanceWithOutEmployer,"401k w/o Employer Match", i + "");
+            rothDataset.addValue(totalEmployeeCont,"Employee Contribution", i + "");
+
+
+
+        }
+
 
     }
+
+
 
 
 
@@ -547,7 +632,7 @@ public class FourZeroOneKGUI extends JFrame {
 
 
 
-    private String calculateRoth401k(){
+    private int calculateRoth401k(int n){
 
         //calculate PMT
         double salary = Double.parseDouble(annualSalary.getText());
@@ -557,14 +642,106 @@ public class FourZeroOneKGUI extends JFrame {
         double mTax = (Double.parseDouble(marginalTaxRate.getText()))/100;
         double PMT = (salary * contribution* (1-mTax))+((salary*limit)*match);
 
-        int time = (Integer.parseInt(plannedRetirementAge.getText())) - (Integer.parseInt(currentAge.getText()));
+        int time = n - (Integer.parseInt(currentAge.getText()));
         double currentBalance = Double.parseDouble(current401kBalance.getText());
         double rate = (Double.parseDouble(expectedRateOfReturn.getText()))/100;
         //calculate result
         double resultD = (currentBalance*(Math.pow((1 + rate),time))) + (PMT * (((Math.pow((1+rate),time))- 1)/rate));
-        return  "$" + (int) resultD;
+        return  (int) resultD;
 
 
+
+
+    }
+
+    private int calculateRoth401kWihOutEmployer(int n){
+
+        //calculate PMT
+        double salary = Double.parseDouble(annualSalary.getText());
+        double contribution = (Double.parseDouble(contributionPercentPerMonth.getText()))/100;
+        double mTax = (Double.parseDouble(marginalTaxRate.getText()))/100;
+        double PMT = (salary * contribution* (1-mTax));
+
+        int time = n - (Integer.parseInt(currentAge.getText()));
+        double currentBalance = Double.parseDouble(current401kBalance.getText());
+        double rate = (Double.parseDouble(expectedRateOfReturn.getText()))/100;
+        //calculate result
+        double resultD = (currentBalance*(Math.pow((1 + rate),time))) + (PMT * (((Math.pow((1+rate),time))- 1)/rate));
+        return  (int) resultD;
+
+
+
+
+    }
+
+    public static boolean isNumber(String input){
+
+
+        try {
+            Double.parseDouble(input);
+            return true;
+        } catch (NumberFormatException e){
+
+            return false;
+        }
+    }
+
+    private void numberErrorGUI(){
+
+        JOptionPane parameterError = new JOptionPane();
+        JOptionPane.showMessageDialog(parameterError, "Please enter numbers only!", "Error!", JOptionPane.ERROR_MESSAGE);
+        add(parameterError);
+    }
+
+    private void missingParameterErrorGUI(){
+
+        JOptionPane missingParameterError = new JOptionPane();
+        JOptionPane.showMessageDialog(missingParameterError, "No empty parameters!", "Error!", JOptionPane.ERROR_MESSAGE);
+        add(missingParameterError);
+    }
+
+    public boolean validateParameter(String[] parameterArray) throws InvalidParameterException{
+
+       for (String parameter : parameterArray){
+
+           if(!isNumber(parameter)){
+
+               numberErrorGUI();
+               throw new InvalidParameterException("Please enter numbers only!");
+
+
+
+
+           }
+
+
+       }
+
+
+        return true;
+
+
+    }
+
+    public boolean validateParameterExists(String[] parameterArray) throws InvalidParameterException{
+
+        for (String parameter : parameterArray){
+
+            if(parameter.trim().isEmpty()){
+
+                missingParameterErrorGUI();
+                throw new InvalidParameterException("No empty parameters!");
+
+
+
+
+            }
+
+
+        }
+
+
+        return true;
 
 
     }
