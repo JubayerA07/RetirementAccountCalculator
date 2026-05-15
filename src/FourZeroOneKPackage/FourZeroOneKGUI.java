@@ -281,7 +281,7 @@ public class FourZeroOneKGUI extends JFrame {
         rothEmployeeContArea.setBackground(Color.WHITE);
         add(rothEmployeeContAreaPane);
 
-        //Roth 401k total Employee Cont area
+        //Roth 401k total Employer Cont area
         JTextField rothEmployerContArea = new JTextField();
         rothEmployerContArea.setEditable(false);
         rothEmployerContArea.setFont(new Font("Dialog", Font.BOLD, 20));
@@ -445,6 +445,11 @@ public class FourZeroOneKGUI extends JFrame {
                 marginalTaxRate.setText("");
                 resultsArea.setText("");
                 rothResultsArea.setText("");
+                totalEmployeeContArea.setText("");
+                totalEmployerContArea.setText("");
+                rothEmployeeContArea.setText("");
+                rothEmployerContArea.setText("");
+
                 dataset.clear();
                 rothDataset.clear();
 
