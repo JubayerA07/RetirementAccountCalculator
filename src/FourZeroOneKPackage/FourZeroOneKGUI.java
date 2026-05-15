@@ -1,4 +1,4 @@
-package RetirementAccountPackage;
+package FourZeroOneKPackage;
 
 import javax.imageio.ImageIO;
 import javax.swing.*;
@@ -37,7 +37,7 @@ public class FourZeroOneKGUI extends JFrame {
 
     public FourZeroOneKGUI() {
 
-        super("401(K) Calculator");
+        super("401K Calculator");
         setSize(1000,1000);
         setResizable(false);
         setLayout(null);
