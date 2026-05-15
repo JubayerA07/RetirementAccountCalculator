@@ -330,7 +330,6 @@ public class FourZeroOneKGUI extends JFrame {
         //Screenshot Button
         JButton screenshot = new JButton("Screenshot");
         screenshot.setBackground(new Color(50, 96,168));
-        screenshot.setForeground(Color.WHITE);
         screenshot.setOpaque(true);
         screenshot.setBounds(20, 20, 130, 40);
         add(screenshot);
@@ -364,7 +363,6 @@ public class FourZeroOneKGUI extends JFrame {
         calculateButton.setFont(new Font("Dialog", Font.BOLD,17));
         calculateButton.setHorizontalAlignment(SwingConstants.CENTER);
         calculateButton.setBackground(new Color(50,96,168));
-        calculateButton.setForeground(Color.WHITE);
         calculateButton.setOpaque(true);
         calculateButton.setBounds(285,815, 150,40 );
         add(calculateButton);
@@ -428,7 +426,6 @@ public class FourZeroOneKGUI extends JFrame {
         resetButton.setFont(new Font("Dialog", Font.BOLD, 17));
         resetButton.setHorizontalAlignment(SwingConstants.CENTER);
         resetButton.setBackground(new Color(50,96,168));
-        resetButton.setForeground(Color.WHITE);
         resetButton.setOpaque(true);
         resetButton.setBounds(100,815,150,40);
         add(resetButton);
