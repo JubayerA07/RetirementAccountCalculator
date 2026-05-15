@@ -1,0 +1,91 @@
+@startuml FourZeroOneK_UML
+title 401(k) Calculator UML
+
+class FourZeroOneKGUI <<JFrame>> {
+  - annualSalary: JTextField
+  - contributionPercentPerMonth: JTextField
+  - estimatedSalaryPercentIncrease: JTextField
+  - currentAge: JTextField
+  - plannedRetirementAge: JTextField
+  - expectedRateOfReturn: JTextField
+  - current401kBalance: JTextField
+  - employerMatchPercent: JTextField
+  - salaryLimitPercent: JTextField
+  - marginalTaxRate: JTextField
+  - calculateButton: JButton
+  - resetButton: JButton
+  - dataset: DefaultCategoryDataset
+  - chartPanel: ChartPanel
+  - rothDataset: DefaultCategoryDataset
+  - rothChartPanel: ChartPanel
+  + FourZeroOneKGUI()
+  - addGUIElements(): void
+  - updateChart(): void
+  - calculate401k(n: int): int
+  - calculate401kWithoutMatch(n: int): double
+  - trad401kEmployeeCont(n: int): double
+  - trad401kEmployerCont(n: int): double
+  - roth401kEmployeeCont(n: int): double
+  - calculateRoth401k(n: int): int
+  - calculateRoth401kWihOutEmployer(n: int): int
+  + {static} isNumber(input: String): boolean
+  - numberErrorGUI(): void
+  - missingParameterErrorGUI(): void
+  + validateParameter(parameterArray: String[]): boolean
+  + validateParameterExists(parameterArray: String[]): boolean
+  + {static} main(args: String[]): void
+}
+
+class InvalidParameterException <<Exception>> {
+  + InvalidParameterException(message: String)
+}
+
+class JFrame
+class JTextField
+class JButton
+class JOptionPane
+class Robot
+class BufferedImage
+class File
+class ImageIO
+class JFreeChart
+class ChartPanel
+class DefaultCategoryDataset
+class ChartFactory
+
+JFrame <|-- FourZeroOneKGUI
+Exception <|-- InvalidParameterException
+
+FourZeroOneKGUI *-- JTextField : input/result fields
+FourZeroOneKGUI *-- JButton : calculate/reset/screenshot
+FourZeroOneKGUI *-- DefaultCategoryDataset : stores chart data
+FourZeroOneKGUI *-- ChartPanel : displays charts
+FourZeroOneKGUI ..> ChartFactory : creates line charts
+FourZeroOneKGUI ..> JFreeChart : uses
+FourZeroOneKGUI ..> JOptionPane : shows errors/messages
+FourZeroOneKGUI ..> InvalidParameterException : throws during validation
+FourZeroOneKGUI ..> Robot : captures screenshot
+FourZeroOneKGUI ..> BufferedImage : screenshot image
+FourZeroOneKGUI ..> File : saves screenshot
+FourZeroOneKGUI ..> ImageIO : writes PNG
+
+note right of FourZeroOneKGUI
+  Main GUI for the 401(k) calculator.
+  It collects user inputs, validates parameters,
+  calculates traditional and Roth 401(k) estimates,
+  updates JFreeChart line graphs, resets fields,
+  and saves a screenshot of the GUI.
+end note
+
+note bottom of FourZeroOneKGUI
+  Main formulas represented by methods:
+  calculate401k(n): traditional with employer match
+  calculate401kWithoutMatch(n): traditional without employer match
+  trad401kEmployeeCont(n): total employee contribution
+  trad401kEmployerCont(n): total employer contribution
+  calculateRoth401k(n): Roth with employer match
+  calculateRoth401kWihOutEmployer(n): Roth without employer match
+  roth401kEmployeeCont(n): Roth after-tax employee contribution
+end note
+
+@enduml
